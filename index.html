@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Text Extractor</title>
+</head>
+<body>
+    <h1>Upload an Image to Extract Text</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="extractButton">Extract Text</button>
+    <div id="result"></div>
+
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script>
+        wx.config({
+            // 配置微信JS-SDK的相关信息，这里需要由服务器端生成并返回签名等信息
+            appId: '', // 你的appId
+            timestamp: 0, // 生成签名的时间戳
+            nonceStr: '', // 生成签名的随机串
+            signature: '', // 签名
+            jsApiList: ['chooseImage', 'getLocalImgData', 'scanQRCode'] // 需要调用的JS接口列表
+        });
+
+        document.getElementById('extractButton').addEventListener('click', function() {
+            wx.chooseImage({
+                count: 1,
+                sizeType: ['compressed'],
+                sourceType: ['album', 'camera'],
+                success: function (res) {
+                    var localIds = res.localIds;
+                    wx.getLocalImgData({
+                        localId: localIds[0],
+                        success: function (res) {
+                            var localData = res.localData;
+                            // 在此处调用OCR接口进行文本提取
+                            wx.scanQRCode({
+                                needResult: 1, // 返回结果
+                                scanType: ["barCode", "qrCode", "datamatrix", "pdf417"], // 扫描类型
+                                success: function (res) {
+                                    var result = res.resultStr; // 提取的文本
+                                    // 这里简单显示提取的文本
+                                    document.getElementById('result').innerHTML = highlightText(result);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        function highlightText(text) {
+            // 简单的示例：高亮所有的单词"important"
+            return text.replace(/important/g, '<span style="background-color: yellow;">important</span>');
+        }
+    </script>
+</body>
+</html>
